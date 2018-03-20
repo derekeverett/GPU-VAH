@@ -74,6 +74,8 @@ void convexCombinationEulerStepKernel(const CONSERVED_VARIABLES * const __restri
 		Q->tty[s] /= 2;
 		Q->ttn[s] += q->ttn[s];
 		Q->ttn[s] /= 2;
+		Q->pl[s] += q->pl[s];
+		Q->pl[s] /= 2;
 #ifdef PIMUNU
 		Q->pitt[s] += q->pitt[s];
 		Q->pitt[s] /= 2;
@@ -95,6 +97,16 @@ void convexCombinationEulerStepKernel(const CONSERVED_VARIABLES * const __restri
 		Q->piyn[s] /= 2;
 		Q->pinn[s] += q->pinn[s];
 		Q->pinn[s] /= 2;
+#endif
+#ifdef W_TZ_MU
+		Q->WtTz[s] += q->WtTz[s];
+		Q->WtTz[s] /= 2;
+		Q->WxTz[s] += q->WxTz[s];
+		Q->WxTz[s] /= 2;
+		Q->WyTz[s] += q->WyTz[s];
+		Q->WyTz[s] /= 2;
+		Q->WnTz[s] += q->WnTz[s];
+		Q->WnTz[s] /= 2;
 #endif
 #ifdef PI
 		Q->Pi[s] += q->Pi[s];
@@ -132,7 +144,7 @@ void twoStepRungeKutta(PRECISION t, PRECISION dt, CONSERVED_VARIABLES * __restri
 	swapFluidVelocity(&d_up, &d_u);
 	setInferredVariablesKernel<<<gridSizeInferredVars, blockSizeInferredVars>>>(d_Q, d_e, d_p, d_u, t);
 
-#ifdef REGULATE_DISSIPATIVE_CURRENTS	
+#ifdef REGULATE_DISSIPATIVE_CURRENTS
 	regulateDissipativeCurrents<<<gridSizeReg, blockSizeReg>>>(t, d_Q, d_e, d_p, d_u, d_validityDomain);
 #endif
 

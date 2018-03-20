@@ -7,10 +7,10 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include "edu/osu/rhic/trunk/hydro/DynamicalVariables.cuh"
-#include "edu/osu/rhic/trunk/hydro/GhostCells.cuh"
-#include "edu/osu/rhic/harness/lattice/LatticeParameters.h"
-#include "edu/osu/rhic/harness/init/CudaConfiguration.cuh"
+#include "../include/DynamicalVariables.cuh"
+#include "../include/GhostCells.cuh"
+#include "../include/LatticeParameters.h"
+#include "../include/CudaConfiguration.cuh"
 
 void setGhostCells(CONSERVED_VARIABLES * const __restrict__ q,
 PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
@@ -43,6 +43,7 @@ int s, int sBC) {
 	q->ttx[s] = q->ttx[sBC];
 	q->tty[s] = q->tty[sBC];
 	q->ttn[s] = q->ttn[sBC];
+	q->pl[s]  = q->pl[sBC];
 	// set \pi^\mu\nu ghost cells if evolved
 #ifdef PIMUNU
 	q->pitt[s] = q->pitt[sBC];

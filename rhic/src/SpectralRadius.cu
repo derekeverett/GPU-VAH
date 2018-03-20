@@ -10,21 +10,21 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include "edu/osu/rhic/trunk/hydro/SpectralRadius.cuh"
-#include "edu/osu/rhic/trunk/hydro/EnergyMomentumTensor.cuh"
-#include "edu/osu/rhic/trunk/hydro/DynamicalVariables.cuh"
+#include "../include/SpectralRadius.cuh"
+#include "../include/EnergyMomentumTensor.cuh"
+#include "../include/DynamicalVariables.cuh"
 
-__device__ 
+__device__
 PRECISION spectralRadiusX(PRECISION ut, PRECISION ux, PRECISION uy, PRECISION un) {
 	return fabsf(ux/ut);
 }
 
-__device__ 
+__device__
 PRECISION spectralRadiusY(PRECISION ut, PRECISION ux, PRECISION uy, PRECISION un) {
 	return fabsf(uy/ut);
 }
 
-__device__ 
+__device__
 PRECISION spectralRadiusZ(PRECISION ut, PRECISION ux, PRECISION uy, PRECISION un) {
 	return fabsf(un/ut);
 }

@@ -5,8 +5,8 @@
  *      Author: bazow
  */
 
-#include "edu/osu/rhic/trunk/hydro/TransportCoefficients.cuh"
-#include "edu/osu/rhic/trunk/eos/EquationOfState.cuh" // for bulk terms
+#include "../include/TransportCoefficients.cuh"
+#include "../include/EquationOfState.cuh" // for bulk terms
 
 // paramters for the analytic parameterization of the bulk viscosity \zeta/S
 #define A_1 -13.77

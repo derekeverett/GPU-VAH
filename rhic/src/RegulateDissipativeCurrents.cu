@@ -4,15 +4,15 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include "edu/osu/rhic/harness/lattice/LatticeParameters.h"
-#include "edu/osu/rhic/trunk/hydro/DynamicalVariables.cuh"
-#include "edu/osu/rhic/harness/init/CudaConfiguration.cuh"
-#include "edu/osu/rhic/trunk/hydro/RegulateDissipativeCurrents.cuh"
+#include "../include/LatticeParameters.h"
+#include "../include/DynamicalVariables.cuh"
+#include "../include/CudaConfiguration.cuh"
+#include "../include/RegulateDissipativeCurrents.cuh"
 
 #ifndef IDEAL
-__global__ 
-void regulateDissipativeCurrents(PRECISION t, 
-CONSERVED_VARIABLES * const __restrict__ currrentVars, 
+__global__
+void regulateDissipativeCurrents(PRECISION t,
+CONSERVED_VARIABLES * const __restrict__ currrentVars,
 const PRECISION * const __restrict__ e, const PRECISION * const __restrict__ p,
 const FLUID_VELOCITY * const __restrict__ u,
 VALIDITY_DOMAIN * const __restrict__ validityDomain
@@ -63,7 +63,7 @@ VALIDITY_DOMAIN * const __restrict__ validityDomain
 		PRECISION piu1 = -pixn*t2*un + pitx*ut - pixx*ux - pixy*uy;
 		PRECISION piu2 = -piyn*t2*un + pity*ut - pixy*ux - piyy*uy;
 		PRECISION piu3 = -pinn*t2*un + pitn*ut - pixn*ux - piyn*uy;
-		
+
 		PRECISION a1 = fdividef(spipi, rhomax)*rsqrtf(e_s*e_s+3*p_s*p_s);
 		PRECISION den = xi0*rhomax*spipi;
 ///*

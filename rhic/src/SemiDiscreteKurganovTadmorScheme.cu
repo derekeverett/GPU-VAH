@@ -7,12 +7,12 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include "edu/osu/rhic/core/muscl/SemiDiscreteKurganovTadmorScheme.cuh"
-#include "edu/osu/rhic/trunk/hydro/DynamicalVariables.cuh"
-#include "edu/osu/rhic/trunk/hydro/EnergyMomentumTensor.cuh"
-#include "edu/osu/rhic/core/muscl/LocalPropagationSpeed.cuh"
+#include "../include/SemiDiscreteKurganovTadmorScheme.cuh"
+#include "../include/DynamicalVariables.cuh"
+#include "../include/EnergyMomentumTensor.cuh"
+#include "../include/LocalPropagationSpeed.cuh"
 
-__device__ 
+__device__
 void flux(const PRECISION * const __restrict__ data, PRECISION * const __restrict__ result,
 		PRECISION (* const rightHalfCellExtrapolation)(PRECISION qmm, PRECISION qm, PRECISION q, PRECISION qp, PRECISION qpp),
 		PRECISION (* const leftHalfCellExtrapolation)(PRECISION qmm, PRECISION qm, PRECISION q, PRECISION qp, PRECISION qpp),
@@ -52,11 +52,11 @@ void flux(const PRECISION * const __restrict__ data, PRECISION * const __restric
 		FqL = fluxFunction(qL_n, utL, uxL, uyL, unL);
 		res = FqR + FqL - a * (qR_n - qL_n);
 		res /= 2;
-		result[n] = res; 
+		result[n] = res;
 	}
 }
 
-__device__ 
+__device__
 void flux2(const PRECISION * const __restrict__ data, PRECISION * const __restrict__ result,
 		PRECISION (* const rightHalfCellExtrapolation)(PRECISION qmm, PRECISION qm, PRECISION q, PRECISION qp, PRECISION qpp),
 		PRECISION (* const leftHalfCellExtrapolation)(PRECISION qmm, PRECISION qm, PRECISION q, PRECISION qp, PRECISION qpp),
@@ -69,7 +69,7 @@ void flux2(const PRECISION * const __restrict__ data, PRECISION * const __restri
 
 	// left and right extrapolated values of the conserved variables
 	for (unsigned int n = 0; n < NUMBER_CONSERVED_VARIABLES; ++n) {
-		PRECISION q = *(data + ptr);		
+		PRECISION q = *(data + ptr);
 		PRECISION qmm 	= *(data + ptr - 2);
 		PRECISION qm 	= *(data + ptr - 1);
 		PRECISION qp 	= *(data + ptr + 1);
@@ -94,6 +94,6 @@ void flux2(const PRECISION * const __restrict__ data, PRECISION * const __restri
 		FqL = fluxFunction(qL_n, utL, uxL, uyL, unL);
 		res = FqR + FqL - a * (qR_n - qL_n);
 		res /= 2;
-		result[n] = res; 
+		result[n] = res;
 	}
 }

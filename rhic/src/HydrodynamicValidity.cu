@@ -8,12 +8,14 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include "edu/osu/rhic/trunk/hydro/HydrodynamicValidity.cuh"
-#include "edu/osu/rhic/harness/lattice/LatticeParameters.h"
-#include "edu/osu/rhic/trunk/hydro/EnergyMomentumTensor.cuh"
-#include "edu/osu/rhic/harness/init/CudaConfiguration.cuh"
-#include "edu/osu/rhic/trunk/eos/EquationOfState.cuh"
-#include "edu/osu/rhic/trunk/hydro/TransportCoefficients.cuh"
+#include "../include/HydrodynamicValidity.cuh"
+#include "../include/LatticeParameters.h"
+#include "../include/EnergyMomentumTensor.cuh"
+#include "../include/CudaConfiguration.cuh"
+#include "../include/EquationOfState.cuh"
+#include "../include/TransportCoefficients.cuh"
+
+#include "../include/AnisotropicDistributionFunctions.h"
 
 __global__
 void checkValidityKernel(PRECISION t, const VALIDITY_DOMAIN * const __restrict__ v, const CONSERVED_VARIABLES * const __restrict__ currrentVars,
@@ -233,4 +235,3 @@ void checkValidity(PRECISION t, const VALIDITY_DOMAIN * const __restrict__ v, co
 		const FLUID_VELOCITY * const __restrict__ up) {
 	checkValidityKernel<<<grid, block>>>(t, v, currrentVars, e, p, u, up);
 }
-

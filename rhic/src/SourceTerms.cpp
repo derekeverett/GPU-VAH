@@ -274,7 +274,7 @@ const CONSERVED_VARIABLES * const __restrict__ currentVars
 	PRECISION dxp = (*(pvec + s + 1) - *(pvec + s - 1)) * facX;
 	PRECISION dyp = (*(pvec + s + d_ncx) - *(pvec + s - d_ncx)) * facY;
 	PRECISION dnp = (*(pvec + s + stride) - *(pvec + s - stride)) * facZ;
-	// pressure
+	// energy density 
 	PRECISION dxe = (*(evec + s + 1) - *(evec + s - 1)) * facX;
 	PRECISION dye = (*(evec + s + d_ncx) - *(evec + s - d_ncx)) * facY;
 	PRECISION dne = (*(evec + s + stride) - *(evec + s - stride)) * facZ;
