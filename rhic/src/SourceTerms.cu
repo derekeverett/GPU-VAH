@@ -24,6 +24,7 @@
 
 //#define USE_CARTESIAN_COORDINATES
 
+/*
 // paramters for the analytic parameterization of the bulk viscosity \zeta/S
 #define A_1 -13.77
 #define A_2 27.55
@@ -48,7 +49,7 @@ inline PRECISION bulkViscosityToEntropyDensity(PRECISION T) {
 	else
 		return A_1*x*x + A_2*x - A_3;
 }
-
+*/
 __device__
 void setPimunuSourceTerms(PRECISION * const __restrict__ pimunuRHS,
 PRECISION t, PRECISION e, PRECISION p,
