@@ -27,7 +27,6 @@ PRECISION getTransverseFluidVelocityMagnitude(const FLUID_VELOCITY * const __res
 __host__ __device__
 int transverseFluidVelocityFromConservedVariables(PRECISION t, PRECISION ePrev, PRECISION uT_0,
 PRECISION MB0, PRECISION MBT, PRECISION MB3, PRECISION PL, PRECISION Pi, double Ft, double x, double *uT,
-int i, int jj, int k, double xi, double yj, double zk,
 int fullTimeStepInversion
 ) {
 	PRECISION uT0 = uT_0;	// initial guess for uT
@@ -98,11 +97,11 @@ PRECISION energyDensityFromConservedVariables(PRECISION ePrev, PRECISION M0, PRE
 #endif
 }
 
+
 __host__ __device__
-void getInferredVariables(PRECISION t, const PRECISION * const __restrict__ q, PRECISION ePrev,
+int getInferredVariables(PRECISION t, const PRECISION * const __restrict__ q, PRECISION ePrev, PRECISION uT_0,
 PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
 PRECISION * const __restrict__ ut, PRECISION * const __restrict__ ux, PRECISION * const __restrict__ uy, PRECISION * const __restrict__ un,
-double xi, double yj, double zk,
 int fullTimeStepInversion
 ) {
 	PRECISION ttt = q[0];
@@ -171,7 +170,7 @@ if(MBT==0.0) MBT=1.e-16;
 double uT;
 int status = -1;
 
-status = transverseFluidVelocityFromConservedVariables(t, ePrev, uT_0, MB0, MBT, MB3, pl, Pi, Ft, x, &uT, i, j, k, xi, yj, zk, fullTimeStepInversion);
+status = transverseFluidVelocityFromConservedVariables(t, ePrev, uT_0, MB0, MBT, MB3, pl, Pi, Ft, x, &uT, fullTimeStepInversion);
 
 if(status == 0) {
 	double C2 = 1.0+pow(uT,2.);
@@ -201,6 +200,7 @@ if(status == 0) {
 //		*p = equilibriumPressure(*e);
 //	}
 
+/*
 if (isnan(*e) || isnan(*ut) || isnan(*ux) || isnan(*uy) || isnan(*un)) {
 	printf("=======================================================================================\n");
 	printf("found NaN in getInferredVariables.\n");
@@ -218,7 +218,7 @@ if (isnan(*e) || isnan(*ut) || isnan(*ux) || isnan(*uy) || isnan(*un)) {
 	printf("=======================================================================================\n");
 	exit(-1);
 }
-
+*/
 return status;
 }
 
@@ -235,7 +235,7 @@ void setInferredVariablesKernel(const CONSERVED_VARIABLES * const __restrict__ q
 		unsigned int i = threadID % d_nx + N_GHOST_CELLS_M;
 		unsigned int s = columnMajorLinearIndex(i, j, k, d_ncx, d_ncy);
 
-		PRECISION q_s[NUMBER_CONSERVED_VARIABLES];
+		PRECISION q_s[NUMBER_CONSERVED_VARIABLES],_e,_p,ut,ux,uy,un;
 		q_s[0] = q->ttt[s];
 		q_s[1] = q->ttx[s];
 		q_s[2] = q->tty[s];
@@ -266,9 +266,9 @@ void setInferredVariablesKernel(const CONSERVED_VARIABLES * const __restrict__ q
 		#ifdef PI
 		q_s[NUMBER_CONSERVED_VARIABLES-1] = q->Pi[s];
 		#endif
-		PRECISION uT = getTransverseFluidVelocityMagnitude(up, s);
+		PRECISION uT = getTransverseFluidVelocityMagnitude(d_up, s);
 
-		int status = getInferredVariables(t,q_s,e[s],uT,&_e,&_p,&ut,&ux,&uy,&un,i,j,k,x,y,z,1);
+		int status = getInferredVariables(t,q_s,e[s],uT,&_e,&_p,&ut,&ux,&uy,&un,1);
 		if (status == 0) fTSolution[s] = 0.0;
 		else fTSolution[s] = 1.0;
 

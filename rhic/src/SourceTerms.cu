@@ -20,7 +20,7 @@
 #include "../include/EquationOfState.cuh" // for bulk terms
 #include "../include/TransportCoefficients.cuh"
 
-#include "../include/AnisotropicDistributionFunctions.h"
+#include "../include/AnisotropicDistributionFunctions.cuh"
 
 //#define USE_CARTESIAN_COORDINATES
 
@@ -321,7 +321,7 @@ void loadSourceTerms(const PRECISION * const __restrict__ I, const PRECISION * c
 		const PRECISION * const __restrict__ Q,
 		PRECISION * const __restrict__ S, const FLUID_VELOCITY * const __restrict__ u,
 		PRECISION utp, PRECISION uxp, PRECISION uyp, PRECISION unp,
-		PRECISION t, PRECISION e, const PRECISION * const __restrict__ pvec, int s) {
+		PRECISION t, const PRECISION * const __restrict__ evec, const PRECISION * const __restrict__ pvec, const CONSERVED_VARIABLES * const __restrict__ currentVars, int s) {
 	//=========================================================
 	// conserved variables
 	//=========================================================
@@ -411,9 +411,11 @@ void loadSourceTerms(const PRECISION * const __restrict__ I, const PRECISION * c
 	PRECISION dyp = (*(pvec + s + d_ncx) - *(pvec + s - d_ncx)) * facY;
 	PRECISION dnp = (*(pvec + s + stride) - *(pvec + s - stride)) * facZ;
 	// energy density
+
 	PRECISION dxe = (*(evec + s + 1) - *(evec + s - 1)) * facX;
 	PRECISION dye = (*(evec + s + d_ncx) - *(evec + s - d_ncx)) * facY;
 	PRECISION dne = (*(evec + s + stride) - *(evec + s - stride)) * facZ;
+
 
 	//=========================================================
 	// spatial derivatives of the conserved variables \pi^{\mu\nu}
@@ -647,7 +649,9 @@ __device__
 void loadSourceTerms2(const PRECISION * const __restrict__ Q,
 PRECISION * const __restrict__ S, const FLUID_VELOCITY * const __restrict__ u,
 PRECISION utp, PRECISION uxp, PRECISION uyp, PRECISION unp,
-PRECISION t, PRECISION e, const PRECISION * const __restrict__ pvec, int s) {
+PRECISION t, const PRECISION * const __restrict__ evec, const PRECISION * const __restrict__ pvec,
+const CONSERVED_VARIABLES * const __restrict__ currentVars,
+int s) {
 	//=========================================================
 	// conserved variables
 	//=========================================================
@@ -739,6 +743,7 @@ PRECISION t, PRECISION e, const PRECISION * const __restrict__ pvec, int s) {
 	PRECISION dyp = (*(pvec + s + d_ncx) - *(pvec + s - d_ncx)) * facY;
 	PRECISION dnp = (*(pvec + s + stride) - *(pvec + s - stride)) * facZ;
 	// energy density
+
 	PRECISION dxe = (*(evec + s + 1) - *(evec + s - 1)) * facX;
 	PRECISION dye = (*(evec + s + d_ncx) - *(evec + s - d_ncx)) * facY;
 	PRECISION dne = (*(evec + s + stride) - *(evec + s - stride)) * facZ;
@@ -1047,6 +1052,7 @@ double dnWnn = 2*(WnTz*dnut-ut*WnTz*uTdnuT/F+ut*dnWnTz)/FS/t;
 PRECISION tnn = (e+pt)*un*un+pt/t2+Lnn+Wnn+pinn;
 
 // deritive of Rbar
+
 double dxRbar0 = Rbar0P*(dxpl-a*dxe)/e;
 double dyRbar0 = Rbar0P*(dypl-a*dye)/e;
 double dnRbar0 = Rbar0P*(dnpl-a*dne)/e;
@@ -1120,6 +1126,7 @@ double IL = lambda_lWu * IL1 - lambda_lWT * IL2 - lambda_lpi * IL3;
 PRECISION dPL = -(pl-p)*taupiInv + zeta_zz*zDzu - zeta_zT*thetaT - beta_lPi * Pi * zDzu - delta_lPi * Pi * thetaT + IL;
 S[4] = dPL / ut + dkvk * pl;
 
+/*
 if(isnan(S[4])) {
 	printf("=======================================================================================\n");
 	printf("Found Nan in S[4]:\n");
@@ -1138,7 +1145,7 @@ if(isnan(S[4])) {
 	printf("=======================================================================================\n");
 	exit(-1);
 }
-
+*/
 
 /************************************************************************************\
  * T^{\mu\nu} source terms
@@ -1151,6 +1158,7 @@ S[2] = -tty / t - dyptHat + dkvk * (Wty + pity) + vx*dxWty + vy*dyWty + vn*dnWty
 S[3] = -3 * ttn / t - dnptHat / t2 + dkvk * (Ltn + Wtn + pitn)
 			+ vx*(dxLtn+dxWtn)-dxWxn + vy*(dyLtn+dyWtn)-dyWyn + vn*(dnLtn+dnLtn)-dnLnn-dnWnn;
 
+/*
 if(isnan(S[0])) {
 	printf("=======================================================================================\n");
 	printf("Found Nan in S[0]:\n");
@@ -1183,6 +1191,7 @@ if(isnan(S[0])) {
 	printf("=======================================================================================\n");
 	exit(-1);
 }
+*/
 
 /************************************************************************************\
  * \pi^{\mu\nu}_\perp source terms

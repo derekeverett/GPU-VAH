@@ -15,7 +15,7 @@
 #include "../include/EquationOfState.cuh"
 #include "../include/TransportCoefficients.cuh"
 
-#include "../include/AnisotropicDistributionFunctions.h"
+#include "../include/AnisotropicDistributionFunctions.cuh"
 
 __global__
 void checkValidityKernel(PRECISION t, const VALIDITY_DOMAIN * const __restrict__ v, const CONSERVED_VARIABLES * const __restrict__ currrentVars,
@@ -213,10 +213,10 @@ void checkValidityKernel(PRECISION t, const VALIDITY_DOMAIN * const __restrict__
 		PRECISION JJ = Jtt * Jtt - 2 * Jtx * Jtx - 2 * Jty * Jty + Jxx * Jxx + 2 * Jxy * Jxy + Jyy * Jyy - 2 * Jtn * Jtn * t2 + 2 * Jxn * Jxn * t2
 				+ 2 * Jyn * Jyn * t2 + Jnn * Jnn * t2 * t2;
 
-		v->inverseReynoldsNumberPimunu[s] = sqrtf(fabsf(pipi)) / p_s;
-		v->inverseReynoldsNumberTilde2Pimunu[s] = T / 2 / d_etabar / (e_s + p_s) * sqrtf(fabsf(JJ / ss));
-		v->inverseReynoldsNumberPi[s] = fabsf(Pi) / p_s;
-		v->inverseReynoldsNumberTilde2Pi[s] = fabsf(J / zetabar / theta) * T / (e_s + p_s);
+		//v->inverseReynoldsNumberPimunu[s] = sqrtf(fabsf(pipi)) / p_s;
+		//v->inverseReynoldsNumberTilde2Pimunu[s] = T / 2 / d_etabar / (e_s + p_s) * sqrtf(fabsf(JJ / ss));
+		//v->inverseReynoldsNumberPi[s] = fabsf(Pi) / p_s;
+		//v->inverseReynoldsNumberTilde2Pi[s] = fabsf(J / zetabar / theta) * T / (e_s + p_s);
 		v->knudsenNumberTaupi[s] = 5 * d_etabar * theta / T;
 		v->knudsenNumberTauPi[s] = theta / tauPiInv;
 #endif

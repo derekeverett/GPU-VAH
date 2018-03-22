@@ -14,7 +14,7 @@
 
 #include "../include/EquationOfState.cuh" // TEMPORARY for sloppy implementation of xi/Lambda initial conditions
 
-#include "../include/AnisotropicDistributionFunctions.h"
+#include "../include/AnisotropicDistributionFunctions.cuh"
 
 CONSERVED_VARIABLES *q;
 CONSERVED_VARIABLES *d_q, *d_Q, *d_qS;
@@ -28,8 +28,10 @@ PRECISION *d_ut, *d_ux, *d_uy, *d_un, *d_utp, *d_uxp, *d_uyp, *d_unp;
 PRECISION *d_ttt, *d_ttx, *d_tty, *d_ttn, *d_pitt, *d_pitx, *d_pity, *d_pitn, *d_pixx, *d_pixy, *d_pixn, *d_piyy, *d_piyn, *d_pinn, *d_Pi;
 
 VALIDITY_DOMAIN *validityDomain, *d_validityDomain;
-PRECISION *d_regulations, *d_knudsenNumberTaupi, *d_knudsenNumberTauPi, *d_inverseReynoldsNumberPimunu, *d_inverseReynoldsNumber2Pimunu,
-		*d_inverseReynoldsNumberTilde2Pimunu, *d_inverseReynoldsNumberPi, *d_inverseReynoldsNumber2Pi, *d_inverseReynoldsNumberTilde2Pi;
+PRECISION *d_regulations, *d_knudsenNumberTaupi, *d_knudsenNumberTauPi, *d_knudsenNumberTaupiT, *d_knudsenNumberTaupiL, *d_inverseReynoldsNumberPimunu, *d_inverseReynoldsNumber2Pimunu,
+		*d_inverseReynoldsNumberTilde2Pimunu, *d_inverseReynoldsNumberPi, *d_inverseReynoldsNumber2Pi, *d_inverseReynoldsNumberTilde2Pi,
+		d_Rpi, d_RPi, d_Rpi2, d_RPi2, d_Rw, d_fTSolution, d_fTSol_1, d_fTSol_2, d_fTSol_X1, d_fTSol_X2, d_fTSol_Y1, d_fTSol_Y2,
+		d_regMag, d_regU0, d_regU1, d_regU2, d_regU3, d_regZ0, d_regZ1, d_regZ2, d_regZ3, d_regTr;
 // for debugging
 PRECISION *d_taupi, *d_dxux, *d_dyuy, *d_theta;
 
@@ -367,24 +369,24 @@ void allocateDeviceMemory(size_t bytes) {
 	cudaMemcpy(&(d_validityDomain->regZ2), &d_regZ2, sizeof(PRECISION*), cudaMemcpyHostToDevice);
 	cudaMemcpy(&(d_validityDomain->regZ3), &d_regZ3, sizeof(PRECISION*), cudaMemcpyHostToDevice);
 
-	cudaMemcpy(&(d_validityDomain->inverseReynoldsNumberPimunu), &d_inverseReynoldsNumberPimunu, sizeof(PRECISION*), cudaMemcpyHostToDevice);
-	cudaMemcpy(&(d_validityDomain->inverseReynoldsNumber2Pimunu), &d_inverseReynoldsNumber2Pimunu, sizeof(PRECISION*), cudaMemcpyHostToDevice);
-	cudaMemcpy(&(d_validityDomain->inverseReynoldsNumberTilde2Pimunu), &d_inverseReynoldsNumberTilde2Pimunu, sizeof(PRECISION*), cudaMemcpyHostToDevice);
-	cudaMemcpy(&(d_validityDomain->inverseReynoldsNumberPi), &d_inverseReynoldsNumberPi, sizeof(PRECISION*), cudaMemcpyHostToDevice);
-	cudaMemcpy(&(d_validityDomain->inverseReynoldsNumber2Pi), &d_inverseReynoldsNumber2Pi, sizeof(PRECISION*), cudaMemcpyHostToDevice);
-	cudaMemcpy(&(d_validityDomain->inverseReynoldsNumberTilde2Pi), &d_inverseReynoldsNumberTilde2Pi, sizeof(PRECISION*), cudaMemcpyHostToDevice);
+	//cudaMemcpy(&(d_validityDomain->inverseReynoldsNumberPimunu), &d_inverseReynoldsNumberPimunu, sizeof(PRECISION*), cudaMemcpyHostToDevice);
+	//cudaMemcpy(&(d_validityDomain->inverseReynoldsNumber2Pimunu), &d_inverseReynoldsNumber2Pimunu, sizeof(PRECISION*), cudaMemcpyHostToDevice);
+	//cudaMemcpy(&(d_validityDomain->inverseReynoldsNumberTilde2Pimunu), &d_inverseReynoldsNumberTilde2Pimunu, sizeof(PRECISION*), cudaMemcpyHostToDevice);
+	//cudaMemcpy(&(d_validityDomain->inverseReynoldsNumberPi), &d_inverseReynoldsNumberPi, sizeof(PRECISION*), cudaMemcpyHostToDevice);
+	//cudaMemcpy(&(d_validityDomain->inverseReynoldsNumber2Pi), &d_inverseReynoldsNumber2Pi, sizeof(PRECISION*), cudaMemcpyHostToDevice);
+	//cudaMemcpy(&(d_validityDomain->inverseReynoldsNumberTilde2Pi), &d_inverseReynoldsNumberTilde2Pi, sizeof(PRECISION*), cudaMemcpyHostToDevice);
 	// for debugging
 	cudaMemcpy(&(d_validityDomain->taupi), &d_taupi, sizeof(PRECISION*), cudaMemcpyHostToDevice);
 	cudaMemcpy(&(d_validityDomain->dxux), &d_dxux, sizeof(PRECISION*), cudaMemcpyHostToDevice);
 	cudaMemcpy(&(d_validityDomain->dyuy), &d_dyuy, sizeof(PRECISION*), cudaMemcpyHostToDevice);
 	cudaMemcpy(&(d_validityDomain->theta), &d_theta, sizeof(PRECISION*), cudaMemcpyHostToDevice);
 
-	cudaMemcpy(&(d_validityDomain->fTSol_X1), &d_fTSol_X1, sizeof(PRECISION*), cudaMemcpyHostToDevice);
-	cudaMemcpy(&(d_validityDomain->fTSol_Y1), &d_fTSol_Y1, sizeof(PRECISION*), cudaMemcpyHostToDevice);
-	cudaMemcpy(&(d_validityDomain->fTSol_1), &d_fTSol_1, sizeof(PRECISION*), cudaMemcpyHostToDevice);
-	cudaMemcpy(&(d_validityDomain->fTSol_X2), &d_fTSol_X2, sizeof(PRECISION*), cudaMemcpyHostToDevice);
-	cudaMemcpy(&(d_validityDomain->fTSol_Y2), &d_fTSol_Y2, sizeof(PRECISION*), cudaMemcpyHostToDevice);
-	cudaMemcpy(&(d_validityDomain->fTSol_2), &d_fTSol_2, sizeof(PRECISION*), cudaMemcpyHostToDevice);
+	//cudaMemcpy(&(d_validityDomain->fTSol_X1), &d_fTSol_X1, sizeof(PRECISION*), cudaMemcpyHostToDevice);
+	//cudaMemcpy(&(d_validityDomain->fTSol_Y1), &d_fTSol_Y1, sizeof(PRECISION*), cudaMemcpyHostToDevice);
+	//cudaMemcpy(&(d_validityDomain->fTSol_1), &d_fTSol_1, sizeof(PRECISION*), cudaMemcpyHostToDevice);
+	//cudaMemcpy(&(d_validityDomain->fTSol_X2), &d_fTSol_X2, sizeof(PRECISION*), cudaMemcpyHostToDevice);
+	//cudaMemcpy(&(d_validityDomain->fTSol_Y2), &d_fTSol_Y2, sizeof(PRECISION*), cudaMemcpyHostToDevice);
+	//cudaMemcpy(&(d_validityDomain->fTSol_2), &d_fTSol_2, sizeof(PRECISION*), cudaMemcpyHostToDevice);
 
 
 }
@@ -466,12 +468,12 @@ void copyDeviceToHostMemory(size_t bytes) {
 	cudaMemcpy(validityDomain->regulations, d_regulations, bytes, cudaMemcpyDeviceToHost);
 	cudaMemcpy(validityDomain->knudsenNumberTaupi, d_knudsenNumberTaupi, bytes, cudaMemcpyDeviceToHost);
 	cudaMemcpy(validityDomain->knudsenNumberTauPi, d_knudsenNumberTauPi, bytes, cudaMemcpyDeviceToHost);
-	cudaMemcpy(validityDomain->inverseReynoldsNumberPimunu, d_inverseReynoldsNumberPimunu, bytes, cudaMemcpyDeviceToHost);
-	cudaMemcpy(validityDomain->inverseReynoldsNumber2Pimunu, d_inverseReynoldsNumber2Pimunu, bytes, cudaMemcpyDeviceToHost);
-	cudaMemcpy(validityDomain->inverseReynoldsNumberTilde2Pimunu, d_inverseReynoldsNumberTilde2Pimunu, bytes, cudaMemcpyDeviceToHost);
-	cudaMemcpy(validityDomain->inverseReynoldsNumberPi, d_inverseReynoldsNumberPi, bytes, cudaMemcpyDeviceToHost);
-	cudaMemcpy(validityDomain->inverseReynoldsNumber2Pi, d_inverseReynoldsNumber2Pi, bytes, cudaMemcpyDeviceToHost);
-	cudaMemcpy(validityDomain->inverseReynoldsNumberTilde2Pi, d_inverseReynoldsNumberTilde2Pi, bytes, cudaMemcpyDeviceToHost);
+	//cudaMemcpy(validityDomain->inverseReynoldsNumberPimunu, d_inverseReynoldsNumberPimunu, bytes, cudaMemcpyDeviceToHost);
+	//cudaMemcpy(validityDomain->inverseReynoldsNumber2Pimunu, d_inverseReynoldsNumber2Pimunu, bytes, cudaMemcpyDeviceToHost);
+	//cudaMemcpy(validityDomain->inverseReynoldsNumberTilde2Pimunu, d_inverseReynoldsNumberTilde2Pimunu, bytes, cudaMemcpyDeviceToHost);
+	//cudaMemcpy(validityDomain->inverseReynoldsNumberPi, d_inverseReynoldsNumberPi, bytes, cudaMemcpyDeviceToHost);
+	//cudaMemcpy(validityDomain->inverseReynoldsNumber2Pi, d_inverseReynoldsNumber2Pi, bytes, cudaMemcpyDeviceToHost);
+	//cudaMemcpy(validityDomain->inverseReynoldsNumberTilde2Pi, d_inverseReynoldsNumberTilde2Pi, bytes, cudaMemcpyDeviceToHost);
 	// for debugging
 	cudaMemcpy(validityDomain->taupi, d_taupi, bytes, cudaMemcpyDeviceToHost);
 	cudaMemcpy(validityDomain->dxux, d_dxux, bytes, cudaMemcpyDeviceToHost);
@@ -535,26 +537,26 @@ void setConservedVariables(double t, void * latticeParams) {
 
 				PRECISION ptHat = transversePressureHat(e_s, p_s, pl);
 				ptHat = 0.5 * (e_s - pl);
-				PRECISION pt = ptHat + 1.5 * Pi;
+				PRECISION pt = ptHat + 1.5 * Pi_s;
 				PRECISION DP = pl - pt;
 
-				PRECISION uT2 = ux * ux + uy * uy;
+				PRECISION uT2 = ux_s * ux_s + uy_s * uy_s;
 				PRECISION uT = sqrt(uT2);
 				PRECISION F = 1.0 + uT2;
 				PRECISION FS = sqrt(1.0 + uT2);
 
-				double z0 = t * un / FS;
-				double z3 = ut / t / FS;
+				double z0 = t * un_s / FS;
+				double z3 = ut_s / t / FS;
 				// L functions
-				PRECISION Ltt = DP * t * t * un * un / F;
+				PRECISION Ltt = DP * t * t * un_s * un_s / F;
 				PRECISION Ltx = 0.0;
 				PRECISION Lty = 0.0;
-				PRECISION Ltn = DP * ut * un / F;
+				PRECISION Ltn = DP * ut_s * un_s / F;
 				// W functions
-				double Wtt = 2 * WtTz * z0;
-				double Wtx = WxTz * z0;
-				double Wty = WyTz * z0;
-				double Wtn = WtTz * z3 + WnTz * z0;
+				double Wtt = 2 * WtTz_s * z0;
+				double Wtx = WxTz_s * z0;
+				double Wty = WyTz_s * z0;
+				double Wtn = WtTz_s * z3 + WnTz_s * z0;
 
 				/*
 				q->ttt[s] = Ttt(e_s, p_s + Pi_s, ut_s, pitt_s);
@@ -563,18 +565,20 @@ void setConservedVariables(double t, void * latticeParams) {
 				q->ttn[s] = Ttn(e_s, p_s + Pi_s, ut_s, un_s, pitn_s);
 				*/
 
-				q->ttt[s] = (e_s + pt) * ut * ut - pt + Ltt + Wtt + pitt;
-				q->ttx[s] = (e_s + pt) *ut * ux + Ltx + Wtx + pitx;
-				q->tty[s] = (e_s + pt) * ut * uy + Lty + Wty + pity;
-				q->ttn[s] = (e_s + pt) * ut * un + Ltn + Wtn + pitn;
+				q->ttt[s] = (e_s + pt) * ut_s * ut_s - pt + Ltt + Wtt + pitt_s;
+				q->ttx[s] = (e_s + pt) * ut_s * ux_s + Ltx + Wtx + pitx_s;
+				q->tty[s] = (e_s + pt) * ut_s * uy_s + Lty + Wty + pity_s;
+				q->ttn[s] = (e_s + pt) * ut_s * un_s + Ltn + Wtn + pitn_s;
 				q->pl[s] = pl;
 
 				// set up to u
+				//there is no host variable up, is this accomplished somewhere else?
+				/*
 				up->ut[s] = ut_s;
 				up->ux[s] = ux_s;
 				up->uy[s] = uy_s;
 				up->un[s] = un_s;
-
+				*/
 			}
 		}
 	}

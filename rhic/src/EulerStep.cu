@@ -263,7 +263,7 @@ const FLUID_VELOCITY * const __restrict__ u, const FLUID_VELOCITY * const __rest
 /**************************************************************************************************************************************************/
 __global__
 void eulerStepKernelSource(PRECISION t,
-const CONSERVED_VARIABLES * const __restrict__ currrentVars, CONSERVED_VARIABLES * const __restrict__ updatedVars,
+const CONSERVED_VARIABLES * const __restrict__ currentVars, CONSERVED_VARIABLES * const __restrict__ updatedVars,
 const PRECISION * const __restrict__ e, const PRECISION * const __restrict__ p,
 const FLUID_VELOCITY * const __restrict__ u, const FLUID_VELOCITY * const __restrict__ up
 ) {
@@ -277,35 +277,35 @@ const FLUID_VELOCITY * const __restrict__ u, const FLUID_VELOCITY * const __rest
 
 		int s = columnMajorLinearIndex(i, j, k, d_ncx, d_ncy);
 
-		Q[0] = currrentVars->ttt[s];
-		Q[1] = currrentVars->ttx[s];
-		Q[2] = currrentVars->tty[s];
-		Q[3] = currrentVars->ttn[s];
-		Q[4] = currrentVars->pl[s];
+		Q[0] = currentVars->ttt[s];
+		Q[1] = currentVars->ttx[s];
+		Q[2] = currentVars->tty[s];
+		Q[3] = currentVars->ttn[s];
+		Q[4] = currentVars->pl[s];
 #ifdef PIMUNU
-		Q[5] = currrentVars->pitt[s];
-		Q[6] = currrentVars->pitx[s];
-		Q[7] = currrentVars->pity[s];
-		Q[8] = currrentVars->pitn[s];
-		Q[9] = currrentVars->pixx[s];
-		Q[10] = currrentVars->pixy[s];
-		Q[11] = currrentVars->pixn[s];
-		Q[12] = currrentVars->piyy[s];
-		Q[13] = currrentVars->piyn[s];
-		Q[14] = currrentVars->pinn[s];
+		Q[5] = currentVars->pitt[s];
+		Q[6] = currentVars->pitx[s];
+		Q[7] = currentVars->pity[s];
+		Q[8] = currentVars->pitn[s];
+		Q[9] = currentVars->pixx[s];
+		Q[10] = currentVars->pixy[s];
+		Q[11] = currentVars->pixn[s];
+		Q[12] = currentVars->piyy[s];
+		Q[13] = currentVars->piyn[s];
+		Q[14] = currentVars->pinn[s];
 #endif
 #ifdef W_TZ_MU
-		Q[15] = currrentVars->WtTz[s];
-		Q[16] = currrentVars->WxTz[s];
-		Q[17] = currrentVars->WyTz[s];
-		Q[18] = currrentVars->WnTz[s];
+		Q[15] = currentVars->WtTz[s];
+		Q[16] = currentVars->WxTz[s];
+		Q[17] = currentVars->WyTz[s];
+		Q[18] = currentVars->WnTz[s];
 #endif
 #ifdef PI
-		Q[NUMBER_CONSERVED_VARIABLES-1] = currrentVars->Pi[s];
+		Q[NUMBER_CONSERVED_VARIABLES-1] = currentVars->Pi[s];
 #endif
 
-		loadSourceTerms2(Q, S, u, up->ut[s], up->ux[s], up->uy[s], up->un[s], t, e[s], p, s);
-
+		//loadSourceTerms2(Q, S, u, up->ut[s], up->ux[s], up->uy[s], up->un[s], t, e[s], p, s);
+		loadSourceTerms2(Q, S, u, up->ut[s], up->ux[s], up->uy[s], up->un[s], t, e, p, currentVars, s);
 		PRECISION result[NUMBER_CONSERVED_VARIABLES];
 		for (unsigned int n = 0; n < NUMBER_CONSERVED_VARIABLES; ++n) {
 			*(result+n) = *(Q+n) + d_dt * ( *(S+n) );
@@ -356,7 +356,7 @@ int s, int ptr, int smm, int sm, int sp, int spp
 
 __global__
 void eulerStepKernelX(PRECISION t,
-const CONSERVED_VARIABLES * const __restrict__ currrentVars, CONSERVED_VARIABLES * const __restrict__ updatedVars,
+const CONSERVED_VARIABLES * const __restrict__ currentVars, CONSERVED_VARIABLES * const __restrict__ updatedVars,
 const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict__ e
 ) {
 	int i = blockDim.x * blockIdx.x + threadIdx.x + N_GHOST_CELLS_M;
@@ -376,31 +376,31 @@ const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict_
 		int sipp = sip+1;
 
 		int ptr=0;
-		setNeighborCellsJK2(currrentVars->ttt,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->ttx,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->tty,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->ttn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pl, I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttt,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttx,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->tty,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pl, I,s,ptr,simm,sim,sip,sipp); ptr+=5;
 #ifdef PIMUNU
-		setNeighborCellsJK2(currrentVars->pitt,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pitx,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pity,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pitn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixx,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixy,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->piyy,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->piyn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pinn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitt,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitx,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pity,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixx,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixy,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->piyy,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->piyn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pinn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
 #endif
 #ifdef W_TZ_MU
-		setNeighborCellsJK2(currrentVars->WtTz,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WxTz,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WyTz,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WnTz,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WtTz,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WxTz,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WyTz,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WnTz,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
 #endif
 #ifdef PI
-		setNeighborCellsJK2(currrentVars->Pi,I,s,ptr,simm,sim,sip,sipp);
+		setNeighborCellsJK2(currentVars->Pi,I,s,ptr,simm,sim,sip,sipp);
 #endif
 
 		PRECISION result[NUMBER_CONSERVED_VARIABLES];
@@ -459,7 +459,7 @@ const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict_
 
 __global__
 void eulerStepKernelY(PRECISION t,
-const CONSERVED_VARIABLES * const __restrict__ currrentVars, CONSERVED_VARIABLES * const __restrict__ updatedVars,
+const CONSERVED_VARIABLES * const __restrict__ currentVars, CONSERVED_VARIABLES * const __restrict__ updatedVars,
 const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict__ e
 ) {
 	int i = blockDim.x * blockIdx.x + threadIdx.x + N_GHOST_CELLS_M;
@@ -479,31 +479,31 @@ const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict_
 		int sjpp = sjp+d_ncx;
 
 		int ptr=0;
-		setNeighborCellsJK2(currrentVars->ttt,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->ttx,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->tty,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->ttn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pl, J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttt,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttx,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->tty,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pl, J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
 #ifdef PIMUNU
-		setNeighborCellsJK2(currrentVars->pitt,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pitx,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pity,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pitn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixx,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixy,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->piyy,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->piyn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pinn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitt,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitx,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pity,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixx,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixy,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->piyy,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->piyn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pinn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
 #endif
 #ifdef W_TZ_MU
-		setNeighborCellsJK2(currrentVars->WtTz,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WxTz,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WyTz,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WnTz,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WtTz,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WxTz,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WyTz,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WnTz,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
 #endif
 #ifdef PI
-		setNeighborCellsJK2(currrentVars->Pi,J,s,ptr,sjmm,sjm,sjp,sjpp);
+		setNeighborCellsJK2(currentVars->Pi,J,s,ptr,sjmm,sjm,sjp,sjpp);
 #endif
 
 		PRECISION result[NUMBER_CONSERVED_VARIABLES];
@@ -562,7 +562,7 @@ const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict_
 
 __global__
 void eulerStepKernelZ(PRECISION t,
-const CONSERVED_VARIABLES * const __restrict__ currrentVars, CONSERVED_VARIABLES * const __restrict__ updatedVars,
+const CONSERVED_VARIABLES * const __restrict__ currentVars, CONSERVED_VARIABLES * const __restrict__ updatedVars,
 const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict__ e
 ) {
 	int i = blockDim.x * blockIdx.x + threadIdx.x + N_GHOST_CELLS_M;
@@ -584,31 +584,31 @@ const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict_
 		int skpp = skp+stride;
 
 		int ptr=0;
-		setNeighborCellsJK2(currrentVars->ttt,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->ttx,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->tty,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->ttn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pl, K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttt,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttx,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->tty,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pl, K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
 #ifdef PIMUNU
-		setNeighborCellsJK2(currrentVars->pitt,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pitx,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pity,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pitn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixx,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixy,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->piyy,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->piyn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pinn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitt,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitx,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pity,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixx,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixy,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->piyy,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->piyn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pinn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
 #endif
 #ifdef W_TZ_MU
-		setNeighborCellsJK2(currrentVars->WtTz,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WxTz,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WyTz,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WnTz,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WtTz,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WxTz,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WyTz,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WnTz,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
 #endif
 #ifdef PI
-		setNeighborCellsJK2(currrentVars->Pi,K,s,ptr,skmm,skm,skp,skpp);
+		setNeighborCellsJK2(currentVars->Pi,K,s,ptr,skmm,skm,skp,skpp);
 #endif
 
 		PRECISION result[NUMBER_CONSERVED_VARIABLES];
@@ -1001,7 +1001,7 @@ const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict_
 /**************************************************************************************************************************************************/
 __global__
 void eulerStepKernelSource_1D(PRECISION t,
-const CONSERVED_VARIABLES * const __restrict__ currrentVars, CONSERVED_VARIABLES * const __restrict__ updatedVars,
+const CONSERVED_VARIABLES * const __restrict__ currentVars, CONSERVED_VARIABLES * const __restrict__ updatedVars,
 const PRECISION * const __restrict__ e, const PRECISION * const __restrict__ p,
 const FLUID_VELOCITY * const __restrict__ u, const FLUID_VELOCITY * const __restrict__ up
 ) {
@@ -1015,34 +1015,35 @@ const FLUID_VELOCITY * const __restrict__ u, const FLUID_VELOCITY * const __rest
 		PRECISION Q[NUMBER_CONSERVED_VARIABLES];
 		PRECISION S[NUMBER_CONSERVED_VARIABLES];
 
-		Q[0] = currrentVars->ttt[s];
-		Q[1] = currrentVars->ttx[s];
-		Q[2] = currrentVars->tty[s];
-		Q[3] = currrentVars->ttn[s];
-		Q[4] = currrentVars->ttn[s];
+		Q[0] = currentVars->ttt[s];
+		Q[1] = currentVars->ttx[s];
+		Q[2] = currentVars->tty[s];
+		Q[3] = currentVars->ttn[s];
+		Q[4] = currentVars->ttn[s];
 #ifdef PIMUNU
-		Q[5] = currrentVars->pitt[s];
-		Q[6] = currrentVars->pitx[s];
-		Q[7] = currrentVars->pity[s];
-		Q[8] = currrentVars->pitn[s];
-		Q[9] = currrentVars->pixx[s];
-		Q[10] = currrentVars->pixy[s];
-		Q[11] = currrentVars->pixn[s];
-		Q[12] = currrentVars->piyy[s];
-		Q[13] = currrentVars->piyn[s];
-		Q[14] = currrentVars->pinn[s];
+		Q[5] = currentVars->pitt[s];
+		Q[6] = currentVars->pitx[s];
+		Q[7] = currentVars->pity[s];
+		Q[8] = currentVars->pitn[s];
+		Q[9] = currentVars->pixx[s];
+		Q[10] = currentVars->pixy[s];
+		Q[11] = currentVars->pixn[s];
+		Q[12] = currentVars->piyy[s];
+		Q[13] = currentVars->piyn[s];
+		Q[14] = currentVars->pinn[s];
 #endif
 #ifdef W_TZ_MU
-		Q[15] = currrentVars->WtTz[s];
-		Q[16] = currrentVars->WxTz[s];
-		Q[17] = currrentVars->WyTz[s];
-		Q[18] = currrentVars->WnTz[s];
+		Q[15] = currentVars->WtTz[s];
+		Q[16] = currentVars->WxTz[s];
+		Q[17] = currentVars->WyTz[s];
+		Q[18] = currentVars->WnTz[s];
 #endif
 #ifdef PI
-		Q[NUMBER_CONSERVED_VARIABLES-1] = currrentVars->Pi[s];
+		Q[NUMBER_CONSERVED_VARIABLES-1] = currentVars->Pi[s];
 #endif
 
-		loadSourceTerms2(Q, S, u, up->ut[s], up->ux[s], up->uy[s], up->un[s], t, e[s], p, s);
+		//loadSourceTerms2(Q, S, u, up->ut[s], up->ux[s], up->uy[s], up->un[s], t, e[s], p, s);
+		loadSourceTerms2(Q, S, u, up->ut[s], up->ux[s], up->uy[s], up->un[s], t, e, p, currentVars, s);
 
 		PRECISION result[NUMBER_CONSERVED_VARIABLES];
 		for (unsigned int n = 0; n < NUMBER_CONSERVED_VARIABLES; ++n) {
@@ -1080,7 +1081,7 @@ const FLUID_VELOCITY * const __restrict__ u, const FLUID_VELOCITY * const __rest
 
 __global__
 void eulerStepKernelX_1D(PRECISION t,
-const CONSERVED_VARIABLES * const __restrict__ currrentVars, CONSERVED_VARIABLES * const __restrict__ updatedVars,
+const CONSERVED_VARIABLES * const __restrict__ currentVars, CONSERVED_VARIABLES * const __restrict__ updatedVars,
 const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict__ e
 ) {
 	unsigned int threadID = blockDim.x * blockIdx.x + threadIdx.x;
@@ -1100,31 +1101,31 @@ const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict_
 		int sipp = sip+1;
 
 		int ptr=0;
-		setNeighborCellsJK2(currrentVars->ttt,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->ttx,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->tty,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->ttn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pl, I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttt,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttx,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->tty,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pl, I,s,ptr,simm,sim,sip,sipp); ptr+=5;
 #ifdef PIMUNU
-		setNeighborCellsJK2(currrentVars->pitt,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pitx,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pity,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pitn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixx,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixy,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->piyy,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->piyn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pinn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitt,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitx,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pity,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixx,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixy,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->piyy,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->piyn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pinn,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
 #endif
 #ifdef W_TZ_MU
-		setNeighborCellsJK2(currrentVars->WtTz,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WxTz,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WyTz,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WnTz,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WtTz,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WxTz,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WyTz,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WnTz,I,s,ptr,simm,sim,sip,sipp); ptr+=5;
 #endif
 #ifdef PI
-		setNeighborCellsJK2(currrentVars->Pi,I,s,ptr,simm,sim,sip,sipp);
+		setNeighborCellsJK2(currentVars->Pi,I,s,ptr,simm,sim,sip,sipp);
 #endif
 
 		PRECISION result[NUMBER_CONSERVED_VARIABLES];
@@ -1183,7 +1184,7 @@ const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict_
 
 __global__
 void eulerStepKernelY_1D(PRECISION t,
-const CONSERVED_VARIABLES * const __restrict__ currrentVars, CONSERVED_VARIABLES * const __restrict__ updatedVars,
+const CONSERVED_VARIABLES * const __restrict__ currentVars, CONSERVED_VARIABLES * const __restrict__ updatedVars,
 const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict__ e
 ) {
 	unsigned int threadID = blockDim.x * blockIdx.x + threadIdx.x;
@@ -1203,31 +1204,31 @@ const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict_
 		int sjpp = sjp+d_ncx;
 
 		int ptr=0;
-		setNeighborCellsJK2(currrentVars->ttt,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->ttx,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->tty,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->ttn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pl, J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttt,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttx,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->tty,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pl, J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
 #ifdef PIMUNU
-		setNeighborCellsJK2(currrentVars->pitt,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pitx,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pity,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pitn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixx,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixy,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->piyy,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->piyn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pinn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitt,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitx,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pity,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixx,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixy,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->piyy,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->piyn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pinn,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
 #endif
 #ifdef W_TZ_MU
-		setNeighborCellsJK2(currrentVars->WtTz,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WxTz,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WyTz,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WnTz,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WtTz,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WxTz,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WyTz,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WnTz,J,s,ptr,sjmm,sjm,sjp,sjpp); ptr+=5;
 #endif
 #ifdef PI
-		setNeighborCellsJK2(currrentVars->Pi,J,s,ptr,sjmm,sjm,sjp,sjpp);
+		setNeighborCellsJK2(currentVars->Pi,J,s,ptr,sjmm,sjm,sjp,sjpp);
 #endif
 
 		PRECISION result[NUMBER_CONSERVED_VARIABLES];
@@ -1286,7 +1287,7 @@ const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict_
 
 __global__
 void eulerStepKernelZ_1D(PRECISION t,
-const CONSERVED_VARIABLES * const __restrict__ currrentVars, CONSERVED_VARIABLES * const __restrict__ updatedVars,
+const CONSERVED_VARIABLES * const __restrict__ currentVars, CONSERVED_VARIABLES * const __restrict__ updatedVars,
 const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict__ e
 ) {
 	unsigned int threadID = blockDim.x * blockIdx.x + threadIdx.x;
@@ -1307,31 +1308,31 @@ const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict_
 		int skpp = skp+stride;
 
 		int ptr=0;
-		setNeighborCellsJK2(currrentVars->ttt,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->ttx,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->tty,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->ttn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pl, K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttt,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttx,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->tty,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->ttn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pl, K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
 #ifdef PIMUNU
-		setNeighborCellsJK2(currrentVars->pitt,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pitx,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pity,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pitn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixx,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixy,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pixn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->piyy,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->piyn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->pinn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitt,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitx,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pity,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pitn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixx,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixy,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pixn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->piyy,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->piyn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->pinn,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
 #endif
 #ifdef W_TZ_MU
- 		setNeighborCellsJK2(currrentVars->WtTz,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WxTz,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WyTz,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
-		setNeighborCellsJK2(currrentVars->WnTz,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+ 		setNeighborCellsJK2(currentVars->WtTz,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WxTz,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WyTz,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
+		setNeighborCellsJK2(currentVars->WnTz,K,s,ptr,skmm,skm,skp,skpp); ptr+=5;
 #endif
 #ifdef PI
-		setNeighborCellsJK2(currrentVars->Pi,K,s,ptr,skmm,skm,skp,skpp);
+		setNeighborCellsJK2(currentVars->Pi,K,s,ptr,skmm,skm,skp,skpp);
 #endif
 
 		PRECISION result[NUMBER_CONSERVED_VARIABLES];
@@ -1387,4 +1388,3 @@ const FLUID_VELOCITY * const __restrict__ u, const PRECISION * const __restrict_
 #endif
 	}
 }
-/**************************************************************************************************************************************************/

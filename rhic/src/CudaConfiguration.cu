@@ -11,17 +11,17 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include "edu/osu/rhic/harness/lattice/LatticeParameters.h"
-#include "edu/osu/rhic/trunk/hydro/DynamicalVariables.cuh"
-#include "edu/osu/rhic/trunk/hydro/GhostCells.cuh"
-#include "edu/osu/rhic/harness/hydro/HydroParameters.h"
-#include "edu/osu/rhic/harness/ic/InitialConditionParameters.h"
-#include "edu/osu/rhic/harness/init/CudaConfiguration.cuh"
-#include "edu/osu/rhic/trunk/hydro/FullyDiscreteKurganovTadmorScheme.cuh"
-#include "edu/osu/rhic/trunk/hydro/EnergyMomentumTensor.cuh"
-#include "edu/osu/rhic/trunk/hydro/RegulateDissipativeCurrents.cuh"
-#include "edu/osu/rhic/trunk/hydro/EulerStep.cuh"
-#include "edu/osu/rhic/trunk/hydro/HydrodynamicValidity.cuh"
+#include "../include/LatticeParameters.h"
+#include "../include/DynamicalVariables.cuh"
+#include "../include/GhostCells.cuh"
+#include "../include/HydroParameters.h"
+#include "../include/InitialConditionParameters.h"
+#include "../include/CudaConfiguration.cuh"
+#include "../include/FullyDiscreteKurganovTadmorScheme.cuh"
+#include "../include/EnergyMomentumTensor.cuh"
+#include "../include/RegulateDissipativeCurrents.cuh"
+#include "../include/EulerStep.cuh"
+#include "../include/HydrodynamicValidity.cuh"
 
 // Parameters put in constant memory
 __constant__ int d_nx,d_ny,d_nz,d_ncx,d_ncy,d_ncz,d_nElements,d_nCompElements;
@@ -57,7 +57,7 @@ dim3 BSX,GSX,BSY,GSY,BSZ,GSZ;
 //===========================================
 
 //===========================================
-// Number of threads to launch for 1D kernels 
+// Number of threads to launch for 1D kernels
 int grid_1D,block_1D,gridX_1D,blockX_1D,gridY_1D,blockY_1D,gridZ_1D,blockZ_1D;
 //===========================================
 
@@ -70,7 +70,7 @@ void initializeCUDALaunchParameters(void * latticeParams) {
 	int ny = lattice->numLatticePointsY;
 	int nz = lattice->numLatticePointsRapidity;
 
-	// set up CUDA Kernel launch parameters	
+	// set up CUDA Kernel launch parameters
 	int len = nx*ny*nz;
 	int len2DI = ny*nz;
 	int len2DJ = nx*nz;
@@ -108,7 +108,7 @@ void initializeCUDALaunchParameters(void * latticeParams) {
 	int minGridSizeEuler_fused_3D, block_fused_3D;
 	cudaOccupancyMaxPotentialBlockSize(&minGridSizeEuler_fused_3D, &block_fused_3D, (void*)eulerStepKernel, 0, len);
 	printf("blockSizeEuler_fused_3D= %d\n", block_fused_3D);
-	GF = dim3((nx + BF.x - 1)/BF.x, (ny + BF.y - 1)/BF.y, (nz + BF.z - 1)/BF.z);	
+	GF = dim3((nx + BF.x - 1)/BF.x, (ny + BF.y - 1)/BF.y, (nz + BF.z - 1)/BF.z);
 	/***************************************************************************************************************\
 
 	/***************************************************************************************************************\
@@ -122,16 +122,16 @@ void initializeCUDALaunchParameters(void * latticeParams) {
 	/***************************************************************************************************************/
 	// Number of threads to launch for 3D kernels
 	block = dim3(BLOCK_DIM_X, BLOCK_DIM_Y, BLOCK_DIM_Z);
-	grid = dim3((nx + block.x - 1)/ block.x, (ny + block.y - 1)/ block.y, (nz + block.z - 1)/ block.z);	
+	grid = dim3((nx + block.x - 1)/ block.x, (ny + block.y - 1)/ block.y, (nz + block.z - 1)/ block.z);
 	// X
 	block_X = dim3(BLOCK_DIM_X_X, BLOCK_DIM_X_Y, BLOCK_DIM_X_Z);
-	grid_X = dim3((nx + block_X.x - 1)/ block_X.x, (ny + block_X.y - 1)/ block_X.y, (nz + block_X.z - 1)/ block_X.z);	
+	grid_X = dim3((nx + block_X.x - 1)/ block_X.x, (ny + block_X.y - 1)/ block_X.y, (nz + block_X.z - 1)/ block_X.z);
 	// Y
 	block_Y = dim3(BLOCK_DIM_Y_X, BLOCK_DIM_Y_Y, BLOCK_DIM_Y_Z);
-	grid_Y = dim3((nx + block_Y.x - 1)/ block_Y.x, (ny + block_Y.y - 1)/ block_Y.y, (nz + block_Y.z - 1)/ block_Y.z);	
+	grid_Y = dim3((nx + block_Y.x - 1)/ block_Y.x, (ny + block_Y.y - 1)/ block_Y.y, (nz + block_Y.z - 1)/ block_Y.z);
 	// Z
 	block_Z = dim3(BLOCK_DIM_Z_X, BLOCK_DIM_Z_Y, BLOCK_DIM_Z_Z);
-	grid_Z = dim3((nx + block_Z.x - 1)/ block_Z.x, (ny + block_Z.y - 1)/ block_Z.y, (nz + block_Z.z - 1)/ block_Z.z);	
+	grid_Z = dim3((nx + block_Z.x - 1)/ block_Z.x, (ny + block_Z.y - 1)/ block_Z.y, (nz + block_Z.z - 1)/ block_Z.z);
 
 	// print max potential block size from occupancy
 	printf("===================================================\n");
@@ -156,10 +156,10 @@ void initializeCUDALaunchParameters(void * latticeParams) {
 	grid = dim3((nx + block.x - 1)/ block.x, (ny + block.y - 1)/ block.y, (nz + block.z - 1)/ block.z);
 	// X
 	BSX = dim3(BSX_X, BSX_Y, BSX_Z);
-	GSX = dim3((nx + BSX_X - 1)/BSX_X, (ny + BSX_Y - 1)/BSX_Y, (nz + BSX_Z - 1)/BSX_Z);	
+	GSX = dim3((nx + BSX_X - 1)/BSX_X, (ny + BSX_Y - 1)/BSX_Y, (nz + BSX_Z - 1)/BSX_Z);
 	// Y
 	BSY = dim3(BSY_X, BSY_Y, BSY_Z);
-	GSY = dim3((nx + BSY_X - 1)/BSY_X, (ny + BSY_Y - 1)/BSY_Y, (nz + BSY_Z - 1)/BSY_Z);	
+	GSY = dim3((nx + BSY_X - 1)/BSY_X, (ny + BSY_Y - 1)/BSY_Y, (nz + BSY_Z - 1)/BSY_Z);
 	// Z
 	BSZ = dim3(BSZ_X, BSZ_Y, BSZ_Z);
 	GSZ = dim3((nx + BSZ_X - 1)/BSZ_X, (ny + BSZ_Y - 1)/BSZ_Y, (nz + BSZ_Z - 1)/BSZ_Z);
@@ -228,8 +228,8 @@ void initializeCUDAConstantParameters(void * latticeParams, void * initCondParam
 
 	etabar = (PRECISION)(hydro->shearViscosityToEntropyDensity);
 
-	nCompElements = ncx * ncy * ncz;	
-	nElements = nx * ny * nz;	
+	nCompElements = ncx * ncy * ncz;
+	nElements = nx * ny * nz;
 
 	cudaMemcpyToSymbol(d_nx, &nx, sizeof(nx), 0, cudaMemcpyHostToDevice);
 	cudaMemcpyToSymbol(d_ny, &ny, sizeof(ny), 0, cudaMemcpyHostToDevice);

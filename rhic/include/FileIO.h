@@ -8,7 +8,7 @@
 #ifndef FILEIO_H_
 #define FILEIO_H_
 
-#include "DynamicalVariables.h"
+#include "DynamicalVariables.cuh"
 
 void output(const PRECISION * const var, double t, const char *pathToOutDir, const char *name, void * latticeParams);
 

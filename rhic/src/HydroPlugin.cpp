@@ -12,18 +12,22 @@
 #include <ctime>
 #include <iostream>
 
+#include <cuda.h>
+#include <cuda_runtime.h>
+
 #include "../include/HydroPlugin.h"
-#include "../include/DynamicalVariables.h"
+#include "../include/DynamicalVariables.cuh"
 #include "../include/LatticeParameters.h"
 #include "../include/InitialConditionParameters.h"
 #include "../include/HydroParameters.h"
 #include "../include/FileIO.h"
 #include "../include/InitialConditions.h"
-#include "../include/FullyDiscreteKurganovTadmorScheme.h"
-#include "../include/EnergyMomentumTensor.h"
-#include "../include/EquationOfState.h"
-
-#include "../include/HydrodynamicValidity.h"
+#include "../include/FullyDiscreteKurganovTadmorScheme.cuh"
+#include "../include/CudaConfiguration.cuh"
+#include "../include/EnergyMomentumTensor.cuh"
+#include "../include/EquationOfState.cuh"
+#include "../include/GhostCells.cuh"
+#include "../include/HydrodynamicValidity.cuh"
 
 #define FREQ 10
 
@@ -41,37 +45,37 @@ void outputDynamicalQuantities(double t, const char *outputDir, void * latticePa
 //	output(q->tty, t, outputDir, "tty", latticeParams);
 //	output(q->ttn, t, outputDir, "ttn", latticeParams);
 	output(q->pl, t, outputDir, "pl", latticeParams);
-	output(validityDomain->knudsenNumberTaupiT, t, outputDir, "knTaupiT", latticeParams);
-	output(validityDomain->knudsenNumberTaupiL, t, outputDir, "knTaupiL", latticeParams);
-	output(validityDomain->knudsenNumberTaupi, t, outputDir, "knTaupi", latticeParams);
-	output(validityDomain->regulations, t, outputDir, "regulations", latticeParams);
+	//output(validityDomain->knudsenNumberTaupiT, t, outputDir, "knTaupiT", latticeParams);
+	//output(validityDomain->knudsenNumberTaupiL, t, outputDir, "knTaupiL", latticeParams);
+	//output(validityDomain->knudsenNumberTaupi, t, outputDir, "knTaupi", latticeParams);
+	//output(validityDomain->regulations, t, outputDir, "regulations", latticeParams);
 //
-	output(validityDomain->regMag, t, outputDir, "regMag", latticeParams);
-	output(validityDomain->regTr, t, outputDir, "regTr", latticeParams);
-	output(validityDomain->regU0, t, outputDir, "regU0", latticeParams);
-	output(validityDomain->regU1, t, outputDir, "regU1", latticeParams);
-	output(validityDomain->regU2, t, outputDir, "regU2", latticeParams);
-	output(validityDomain->regU3, t, outputDir, "regU3", latticeParams);
-	output(validityDomain->regZ0, t, outputDir, "regZ0", latticeParams);
-	output(validityDomain->regZ1, t, outputDir, "regZ1", latticeParams);
-	output(validityDomain->regZ2, t, outputDir, "regZ2", latticeParams);
-	output(validityDomain->regZ3, t, outputDir, "regZ3", latticeParams);
+	//output(validityDomain->regMag, t, outputDir, "regMag", latticeParams);
+	//output(validityDomain->regTr, t, outputDir, "regTr", latticeParams);
+	//output(validityDomain->regU0, t, outputDir, "regU0", latticeParams);
+	//output(validityDomain->regU1, t, outputDir, "regU1", latticeParams);
+	//output(validityDomain->regU2, t, outputDir, "regU2", latticeParams);
+	//output(validityDomain->regU3, t, outputDir, "regU3", latticeParams);
+	//output(validityDomain->regZ0, t, outputDir, "regZ0", latticeParams);
+	//output(validityDomain->regZ1, t, outputDir, "regZ1", latticeParams);
+	//output(validityDomain->regZ2, t, outputDir, "regZ2", latticeParams);
+	//output(validityDomain->regZ3, t, outputDir, "regZ3", latticeParams);
 //
-	output(validityDomain->stt, t, outputDir, "stt", latticeParams);
-	output(validityDomain->sxx, t, outputDir, "sxx", latticeParams);
-	output(validityDomain->syy, t, outputDir, "syy", latticeParams);
-	output(validityDomain->snn, t, outputDir, "snn", latticeParams);
-	output(validityDomain->taupi, t, outputDir, "taupi", latticeParams);
-	output(validityDomain->dxux, t, outputDir, "dxux", latticeParams);
-	output(validityDomain->dyuy, t, outputDir, "dyuy", latticeParams);
-	output(validityDomain->theta, t, outputDir, "theta", latticeParams);
+	//output(validityDomain->stt, t, outputDir, "stt", latticeParams);
+	//output(validityDomain->sxx, t, outputDir, "sxx", latticeParams);
+	//output(validityDomain->syy, t, outputDir, "syy", latticeParams);
+	//output(validityDomain->snn, t, outputDir, "snn", latticeParams);
+	//output(validityDomain->taupi, t, outputDir, "taupi", latticeParams);
+	//output(validityDomain->dxux, t, outputDir, "dxux", latticeParams);
+	//output(validityDomain->dyuy, t, outputDir, "dyuy", latticeParams);
+	//output(validityDomain->theta, t, outputDir, "theta", latticeParams);
 //	output(validityDomain->fTSolution, t, outputDir, "fTSolution", latticeParams);
-	output(fTSol_X1, t, outputDir, "fTSol_X1", latticeParams);
-	output(fTSol_Y1, t, outputDir, "fTSol_Y1", latticeParams);
-	output(fTSol_1, t, outputDir, "fTSol_1", latticeParams);
-	output(fTSol_X2, t, outputDir, "fTSol_X2", latticeParams);
-	output(fTSol_Y2, t, outputDir, "fTSol_Y2", latticeParams);
-	output(fTSol_2, t, outputDir, "fTSol_2", latticeParams);
+	//output(fTSol_X1, t, outputDir, "fTSol_X1", latticeParams);
+	//output(fTSol_Y1, t, outputDir, "fTSol_Y1", latticeParams);
+	//output(fTSol_1, t, outputDir, "fTSol_1", latticeParams);
+	//output(fTSol_X2, t, outputDir, "fTSol_X2", latticeParams);
+	//output(fTSol_Y2, t, outputDir, "fTSol_Y2", latticeParams);
+	//output(fTSol_2, t, outputDir, "fTSol_2", latticeParams);
 #ifdef PIMUNU
 	output(q->pixx, t, outputDir, "pixx", latticeParams);
 	output(q->pixy, t, outputDir, "pixy", latticeParams);
@@ -84,24 +88,44 @@ void outputDynamicalQuantities(double t, const char *outputDir, void * latticePa
 	output(q->pity, t, outputDir, "pity", latticeParams);
 	output(q->pitn, t, outputDir, "pitn", latticeParams);
 	output(q->pinn, t, outputDir, "pinn", latticeParams);
-	output(validityDomain->Rpi, t, outputDir, "Rpi", latticeParams);
-	output(validityDomain->Rpi2, t, outputDir, "Rpi2", latticeParams);
+	//output(validityDomain->Rpi, t, outputDir, "Rpi", latticeParams);
+	//output(validityDomain->Rpi2, t, outputDir, "Rpi2", latticeParams);
 #endif
 #ifdef W_TZ_MU
 	output(q->WtTz, t, outputDir, "WtTz", latticeParams);
 	output(q->WxTz, t, outputDir, "WxTz", latticeParams);
 	output(q->WyTz, t, outputDir, "WyTz", latticeParams);
 	output(q->WnTz, t, outputDir, "WnTz", latticeParams);
-	output(validityDomain->Rw, t, outputDir, "Rw", latticeParams);
+	//output(validityDomain->Rw, t, outputDir, "Rw", latticeParams);
 #endif
 #ifdef PI
 	output(q->Pi, t, outputDir, "Pi", latticeParams);
-	output(validityDomain->knudsenNumberTauPi, t, outputDir, "knTauPi", latticeParams);
-	output(validityDomain->RPi, t, outputDir, "RPi", latticeParams);
-	output(validityDomain->RPi2, t, outputDir, "RPi2", latticeParams);
+	//output(validityDomain->knudsenNumberTauPi, t, outputDir, "knTauPi", latticeParams);
+	//output(validityDomain->RPi, t, outputDir, "RPi", latticeParams);
+	//output(validityDomain->RPi2, t, outputDir, "RPi2", latticeParams);
 #endif
 //*/
 }
+
+#define CLOCKS_PER_MILLISEC (CLOCKS_PER_SEC / 1000)
+class Stopwatch {
+private:
+	time_t start, end;
+public:
+	Stopwatch() {
+		start = clock();
+		end = 0;
+	}
+	void tic() {
+		start = clock();
+	}
+	void toc() {
+		end = clock();
+	}
+	double elapsedTime() {
+		return ((double) (end - start)) / CLOCKS_PER_MILLISEC;
+	}
+};
 
 void run(void * latticeParams, void * initCondParams, void * hydroParams, const char *rootDirectory, const char *outputDir) {
 	struct LatticeParameters * lattice = (struct LatticeParameters *) latticeParams;
@@ -122,7 +146,9 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
 
 	double t0 = hydro->initialProperTimePoint;
 	double dt = lattice->latticeSpacingProperTime;
-
+	double dx = lattice->latticeSpacingX;
+	double dy = lattice->latticeSpacingY;
+	double dz = lattice->latticeSpacingRapidity;
 	double e0 = initCond->initialEnergyDensity;
 
 	double freezeoutTemperatureGeV = hydro->freezeoutTemperatureGeV;
@@ -141,26 +167,30 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
 #endif
 	printf("eta/s = %.6f\n", hydro->shearViscosityToEntropyDensity);
 
-	// allocate memory
+	// Initialize CUDA kernel parameters
+	initializeCUDALaunchParameters(latticeParams);
+	initializeCUDAConstantParameters(latticeParams, initCondParams, hydroParams);
+
+	// Allocate host and device memory
+	size_t bytes = nElements * sizeof(PRECISION);
 	allocateHostMemory(nElements);
+	allocateDeviceMemory(bytes);
 
 	/************************************************************************************\
-	 * Fluid dynamic initialization
+	* Fluid dynamic initialization
 	/************************************************************************************/
 	double t = t0;
 	// generate initial conditions
 	setInitialConditions(latticeParams, initCondParams, hydroParams, rootDirectory);
 	// Calculate conserved quantities
 	setConservedVariables(t, latticeParams);
+	// copy conserved/inferred variables to GPU memory
+	copyHostToDeviceMemory(bytes);
 	// impose boundary conditions with ghost cells
-	setGhostCells(q,e,p,u,latticeParams);
-
-	// Validity
-	PRECISION dx = (PRECISION)(lattice->latticeSpacingX);
-	PRECISION dy = (PRECISION)(lattice->latticeSpacingY);
-	PRECISION dz = (PRECISION)(lattice->latticeSpacingRapidity);
-	PRECISION etabar = (PRECISION)(hydro->shearViscosityToEntropyDensity);
-	checkValidity(t, validityDomain, q, e, p, u, up, ncx, ncy, ncz, etabar, dt, dx, dy, dz);
+	setGhostCells(d_q,d_e,d_p,d_u);
+	//#ifndef IDEAL
+	checkValidity(t, d_validityDomain, d_q, d_e, d_p, d_u, d_up);
+	//#endif
 
 	/************************************************************************************\
 	 * Evolve the system in time
@@ -170,8 +200,7 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
 	int kctr = (nz % 2 == 0) ? ncz/2 : (ncz-1)/2;
 	int sctr = columnMajorLinearIndex(ictr, jctr, kctr, ncx, ncy);
 
-	std::clock_t t1,t2;
-
+	Stopwatch sw;
 	double totalTime = 0;
 	int nsteps = 0;
 
@@ -179,27 +208,28 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
 	for (int n = 1; n <= nt+1; ++n) {
 		// copy variables back to host and write to disk
 		if ((n-1) % FREQ == 0) {
-			printf("n = %d:%d (t = %.3f),\t (e, p, pl) = (%.3f, %.3f, %.3f) [fm^-4],\t (T = %.3f [GeV]),\t a = %.3f\n",
-				n - 1, nt, t, e[sctr], p[sctr], q->pl[sctr], effectiveTemperature(e[sctr])*hbarc, q->pl[sctr]/e[sctr]);
+			copyDeviceToHostMemory(bytes);
+			printf("n = %d:%d (t = %.3f),\t (e, p) = (%.3f, %.3f) [GeV/fm^3],\t (T = %.3f [GeV]),\t",
+			n - 1, nt, t, e[sctr]*hbarc, p[sctr]*hbarc, effectiveTemperature(e[sctr])*hbarc);
 			outputDynamicalQuantities(t, outputDir, latticeParams);
 			// end hydrodynamic simulation if the temperature is below the freezeout temperature
-			if(e[sctr] < freezeoutEnergyDensity) {
-				printf("\nReached freezeout temperature at the center.\n");
-				break;
-			}
+			//if(e[sctr] < freezeoutEnergyDensity) {
+			//	printf("\nReached freezeout temperature at the center.\n");
+			//	break;
+			//}
 		}
 
-		t1 = std::clock();
-		rungeKutta2(t, dt, q, Q, latticeParams, hydroParams);
-		t2 = std::clock();
-		double delta_time = (t2 - t1) / (double)(CLOCKS_PER_SEC / 1000);
-//		if ((n-1) % FREQ == 0) printf("(Elapsed time: %.3f ms)\n",delta_time);
-		totalTime+=delta_time;
-		++nsteps;
+	sw.tic();
+	twoStepRungeKutta(t, dt, d_q, d_Q);
+	sw.toc();
+	float elapsedTime = sw.elapsedTime();
+	if ((n-1) % FREQ == 0) printf("(Elapsed time/step: %.3f ms)\n", elapsedTime);
+	totalTime+=elapsedTime;
+	++nsteps;
 
-		setCurrentConservedVariables();
+	setCurrentConservedVariables();
 
-		t = t0 + n * dt;
+	t = t0 + n * dt;
 	}
 	printf("Average time/step: %.3f ms\n",totalTime/((double)nsteps));
 
@@ -207,4 +237,6 @@ void run(void * latticeParams, void * initCondParams, void * hydroParams, const 
 	 * Deallocate host memory
 	/************************************************************************************/
 	freeHostMemory();
+	freeDeviceMemory();
+	cudaDeviceReset();
 }

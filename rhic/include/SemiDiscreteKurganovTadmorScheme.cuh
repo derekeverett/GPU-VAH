@@ -8,7 +8,7 @@
 #ifndef SEMIDISCRETEKURGANOVTADMORSCHEME_CUH_
 #define SEMIDISCRETEKURGANOVTADMORSCHEME_CUH_
 
-#include "edu/osu/rhic/trunk/hydro/DynamicalVariables.cuh"
+#include "../include/DynamicalVariables.cuh"
 
 __device__
 void flux(const PRECISION * const __restrict__ data, PRECISION * const __restrict__ result,

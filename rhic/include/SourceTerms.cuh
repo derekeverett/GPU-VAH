@@ -16,7 +16,8 @@ const PRECISION * const __restrict__ I, const PRECISION * const __restrict__ J, 
 const PRECISION * const __restrict__ Q, PRECISION * const __restrict__ S,
 const FLUID_VELOCITY * const __restrict__ u,
 PRECISION utp, PRECISION uxp, PRECISION uyp, PRECISION unp,
-PRECISION t, PRECISION e, const PRECISION * const __restrict__ pvec,
+PRECISION t, const PRECISION * const __restrict__ evec, const PRECISION * const __restrict__ pvec,
+const CONSERVED_VARIABLES * const __restrict__ currentVars,
 int s
 );
 //=================================================================
@@ -30,7 +31,8 @@ PRECISION t);
 __device__
 void loadSourceTerms2(const PRECISION * const __restrict__ Q, PRECISION * const __restrict__ S, const FLUID_VELOCITY * const __restrict__ u,
 PRECISION utp, PRECISION uxp, PRECISION uyp, PRECISION unp,
-PRECISION t, PRECISION e, const PRECISION * const __restrict__ pvec,
+PRECISION t, const PRECISION * const __restrict__ evec, const PRECISION * const __restrict__ pvec,
+const CONSERVED_VARIABLES * const __restrict__ currentVars,
 int s
 );
 

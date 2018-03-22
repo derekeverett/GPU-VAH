@@ -1,17 +1,18 @@
 /*
- * DynamicalVariables.cuh
+ * DynamicalVariables.h
  *
  *  Created on: Oct 22, 2015
  *      Author: bazow
  */
 
-#ifndef DYNAMICALVARIABLES_CUH_
-#define DYNAMICALVARIABLES_CUH_
+#ifndef DYNAMICALVARIABLES_H_
+#define DYNAMICALVARIABLES_H_
 
 #define NUMBER_CONSERVATION_LAWS 4
 
-#define PIMUNU
-#define PI
+//#define PIMUNU
+//#define W_TZ_MU 
+//#define PI
 
 /*********************************************************/
 #ifndef PI
@@ -41,13 +42,9 @@
 #define NUMBER_CONSERVED_VARIABLES (NUMBER_CONSERVATION_LAWS+1+NUMBER_DISSIPATIVE_CURRENTS)
 /*********************************************************/
 
-#define PRECISION double
+#define PRECISION double 
 
-#include <cuda.h>
-#include <cuda_runtime.h>
-
-// Struct containing the conserved variables
-typedef struct
+typedef struct 
 {
 	PRECISION *ttt;
 	PRECISION *ttx;
@@ -77,8 +74,7 @@ typedef struct
 #endif
 } CONSERVED_VARIABLES;
 
-// Struct containing components of the fluid velocity
-typedef struct
+typedef struct 
 {
 	PRECISION *ut;
 	PRECISION *ux;
@@ -86,7 +82,6 @@ typedef struct
 	PRECISION *un;
 } FLUID_VELOCITY;
 
-/****************************************************************************/
 typedef struct
 {
 	PRECISION *knudsenNumberTaupiT;
@@ -121,63 +116,42 @@ typedef struct
 	PRECISION *theta;
 } VALIDITY_DOMAIN;
 
-// To check the validity of the fluid dynamic effective theory
-extern VALIDITY_DOMAIN *validityDomain,*d_validityDomain;
-extern PRECISION *d_regulations, *d_knudsenNumberTaupi, *d_knudsenNumberTauPi, *d_inverseReynoldsNumberPimunu,*d_inverseReynoldsNumber2Pimunu,*d_inverseReynoldsNumberTilde2Pimunu,
-*d_inverseReynoldsNumberPi,*d_inverseReynoldsNumber2Pi,*d_inverseReynoldsNumberTilde2Pi;
-// for debugging
-extern PRECISION *d_taupi, *d_dxux, *d_dyuy, *d_theta;
-/****************************************************************************/
-
-extern CONSERVED_VARIABLES *q;
-extern CONSERVED_VARIABLES *d_q,*d_Q,*d_qS;
-
+extern CONSERVED_VARIABLES *q,*Q,*qS;
+extern FLUID_VELOCITY *u,*up,*uS;
 extern PRECISION *e, *p;
-extern PRECISION *d_e, *d_p, *d_ut, *d_ux, *d_uy, *d_un;
 
-extern PRECISION *d_ttt,*d_ttx,*d_tty,*d_ttn,*d_pitt,*d_pitx,*d_pity,*d_pitn,*d_pixx,*d_pixy,*d_pixn,*d_piyy,*d_piyn,*d_pinn,*d_Pi;
-
-extern FLUID_VELOCITY *u;
-extern FLUID_VELOCITY *d_u,*d_up,*d_uS;
+extern VALIDITY_DOMAIN *validityDomain;
 
 extern double *fTSol_X1,*fTSol_Y1,*fTSol_1,*fTSol_X2,*fTSol_Y2,*fTSol_2;
 
-__host__ __device__
 int columnMajorLinearIndex(int i, int j, int k, int nx, int ny);
 
 void allocateHostMemory(int len);
-void allocateDeviceMemory(size_t bytes);
-
-void copyHostToDeviceMemory(size_t bytes);
-void copyDeviceToHostMemory(size_t bytes);
 
 void setConservedVariables(double t, void * latticeParams);
 void setCurrentConservedVariables();
-void swapFluidVelocity(FLUID_VELOCITY **arr1, FLUID_VELOCITY **arr2);
+void swapFluidVelocity(FLUID_VELOCITY **arr1, FLUID_VELOCITY **arr2) ;
 
-/*
-void setGhostCells(CONSERVED_VARIABLES * const __restrict__ q,
-PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
+void setGhostCells(CONSERVED_VARIABLES * const __restrict__ q, 
+PRECISION * const __restrict__ e, PRECISION * const __restrict__ p, 
 FLUID_VELOCITY * const __restrict__ u, void * latticeParams
 );
 
-void setGhostCellsKernelI(CONSERVED_VARIABLES * const __restrict__ q,
-PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
+void setGhostCellsKernelI(CONSERVED_VARIABLES * const __restrict__ q, 
+PRECISION * const __restrict__ e, PRECISION * const __restrict__ p, 
 FLUID_VELOCITY * const __restrict__ u, void * latticeParams
 );
 
-void setGhostCellsKernelJ(CONSERVED_VARIABLES * const __restrict__ q,
-PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
+void setGhostCellsKernelJ(CONSERVED_VARIABLES * const __restrict__ q, 
+PRECISION * const __restrict__ e, PRECISION * const __restrict__ p, 
 FLUID_VELOCITY * const __restrict__ u, void * latticeParams
 );
 
-void setGhostCellsKernelK(CONSERVED_VARIABLES * const __restrict__ q,
-PRECISION * const __restrict__ e, PRECISION * const __restrict__ p,
+void setGhostCellsKernelK(CONSERVED_VARIABLES * const __restrict__ q, 
+PRECISION * const __restrict__ e, PRECISION * const __restrict__ p, 
 FLUID_VELOCITY * const __restrict__ u, void * latticeParams
 );
-*/
 
 void freeHostMemory();
-void freeDeviceMemory();
 
-#endif /* DYNAMICALVARIABLES_CUH_ */
+#endif /* DYNAMICALVARIABLES_H_ */

@@ -9,7 +9,7 @@
 
 #include "../include/FileIO.h"
 #include "../include/LatticeParameters.h"
-#include "../include/DynamicalVariables.h"
+#include "../include/DynamicalVariables.cuh"
 
 void output(const PRECISION * const var, double t, const char *pathToOutDir, const char *name, void * latticeParams) {
 	FILE *fp;

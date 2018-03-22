@@ -10,7 +10,7 @@
 
 #include <libconfig.h>
 
-#include "DynamicalVariables.h"
+#include "DynamicalVariables.cuh"
 
 struct HydroParameters
 {

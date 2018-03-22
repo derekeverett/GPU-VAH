@@ -10,13 +10,13 @@
 #include <stdlib.h> //TEMP
 
 #include "../include/InitialConditions.h"
-#include "../include/DynamicalVariables.h"
+#include "../include/DynamicalVariables.cuh"
 #include "../include/LatticeParameters.h"
 #include "../include/InitialConditionParameters.h"
 #include "../include/GlauberModel.h"
 #include "../include/MonteCarloGlauberModel.h"
 #include "../include/HydroParameters.h"
-#include "../include/EquationOfState.h"
+#include "../include/EquationOfState.cuh"
 
 #define THETA_FUNCTION(X) ((double)X < (double)0 ? (double)0 : (double)1)
 
